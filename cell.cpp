@@ -118,12 +118,26 @@ Simulation::Simulation(sf::RenderWindow& windowRef)
     : window(windowRef), disRadius(5, 20), 
       disPositionX(5, windowRef.getSize().x - 20), 
       disPositionY(5, windowRef.getSize().y - 20),
-      disOffset(-100, 100)  
+      disOffset(-100, 100),  
+      simulationRunning(false)
 {
     gen.seed(std::random_device()());
 
-    // Initialize 10 cells for each team:
+    // Set up the start button
+    startButton.setSize(sf::Vector2f(100, 50));  // Set the size of the button
+    startButton.setFillColor(sf::Color::Green);  // Set the color of the button
+    startButton.setPosition(windowRef.getSize().x / 2 - 50, windowRef.getSize().y / 2 - 25);  // Center the button
 
+
+    // You can also add text to the button
+    sf::Font font;
+    if (font.loadFromFile("/Users/sam/Desktop/coding projects/Cell division/Cell-Divison/fonts/Arial.ttf")) { // Load a font (you may need to provide the correct font file)
+        sf::Text buttonText("Start", font, 24); // Create a text object
+        buttonText.setFillColor(sf::Color::White); // Set the text color
+        buttonText.setPosition(startButton.getPosition().x + 20, startButton.getPosition().y + 10); // Adjust the text position
+    }
+
+    // Initialize 10 cells for each team:
     for (int i = 0; i < 10; ++i) {
         cells.emplace_back(sf::Vector2f(disPositionX(gen), disPositionY(gen)), disRadius(gen), TeamColor::RED);
         cells.emplace_back(sf::Vector2f(disPositionX(gen), disPositionY(gen)), disRadius(gen), TeamColor::GREEN);
@@ -133,9 +147,11 @@ Simulation::Simulation(sf::RenderWindow& windowRef)
 
 
 
-void Simulation::update(float windowHeight, float windowWidth) {
-    std::vector<Cell> newCells;
 
+void Simulation::update(float windowHeight, float windowWidth) {
+    
+    if(simulationRunning){
+    std::vector<Cell> newCells;
     for (Cell &cell : cells) {
 
      cell.update(windowWidth, windowHeight);
@@ -150,6 +166,8 @@ void Simulation::update(float windowHeight, float windowWidth) {
     for (const auto& newCell : newCells) {
         cells.push_back(newCell);
     }
+    }
+    
 }
 
 void Simulation::addCells(const std::vector<Cell>& newCells) {
@@ -167,29 +185,41 @@ void Simulation::display() {
 }
 
  void Simulation::checkCollisionsAndSwallow() {
-        for (int i = 0; i < cells.size(); i++) {
-            for (int j = i + 1; j < cells.size(); j++) {
-                // Check if they're of different colors
-                if (mapSFColorToTeamColor(cells[i].getShape().getFillColor()) != 
-                    mapSFColorToTeamColor(cells[j].getShape().getFillColor())) {
-                    
-                    float distance = getDistance(cells[i].getShape().getPosition(), cells[j].getShape().getPosition());
-                    float sumOfRadii = cells[i].getShape().getRadius() + cells[j].getShape().getRadius();
+    for (int i = 0; i < cells.size(); i++) {
+        for (int j = i + 1; j < cells.size(); j++) {
+            // Check if they're of different colors
+            if (mapSFColorToTeamColor(cells[i].getShape().getFillColor()) !=
+                mapSFColorToTeamColor(cells[j].getShape().getFillColor())) {
 
-                    if (distance < sumOfRadii) {  // They're colliding
-                        if (cells[i].getShape().getRadius() < cells[j].getShape().getRadius()) {
-                            // Remove cell[i]
-                            cells.erase(cells.begin() + i);
-                            i--;  // Decrement i to account for the removed cell
-                            break;  // Exit the inner loop
-                        } else {
-                            // Remove cell[j]
-                            cells.erase(cells.begin() + j);
-                            j--;
-                        }
+                float distance = getDistance(cells[i].getShape().getPosition(), cells[j].getShape().getPosition());
+                float sumOfRadii = cells[i].getShape().getRadius() + cells[j].getShape().getRadius();
+
+                if (distance < sumOfRadii) {  // They're colliding
+                    if (cells[i].getShape().getRadius() < cells[j].getShape().getRadius()) {
+
+                        // Remove cell[i]
+                        cells.erase(cells.begin() + i);
+                        i--;  // Decrement i to account for the removed cell
+                        break;  // Exit the inner loop
+                    } else {
+                        // Remove cell[j]
+                        cells.erase(cells.begin() + j);
+                        j--;
                     }
                 }
             }
         }
     }
+}
 
+bool Simulation:: isSimulationRunning() const {
+    return simulationRunning;
+}
+
+const sf::RectangleShape& Simulation::getStartButton() const {
+    return startButton;
+}
+
+void Simulation:: setSimulationRunningToTrue(){
+    simulationRunning=true;
+}

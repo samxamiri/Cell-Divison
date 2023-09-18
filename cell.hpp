@@ -22,7 +22,7 @@ private:
     sf::CircleShape shape;
     sf::Vector2f velocity;
     bool divided;
-
+    
     std::mt19937 gen;
     std::uniform_real_distribution<> distrAngle;
 };
@@ -36,12 +36,17 @@ public:
     void draw(sf::RenderWindow& window);
     void addCells(const std::vector<Cell>& newCells); // Only the declaration here
     void checkCollisionsAndSwallow() ;
+    bool isSimulationRunning() const;
+    const sf::RectangleShape& getStartButton() const ;
+    void setSimulationRunningToTrue();
+        
     
 
 private:
     std::vector<Cell> cells;
     sf::RenderWindow& window;
-
+    bool simulationRunning;
+    sf::RectangleShape startButton;
     std::mt19937 gen;
     std::uniform_real_distribution<> disRadius;
     std::uniform_real_distribution<> disPositionX;

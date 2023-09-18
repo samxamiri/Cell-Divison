@@ -3,6 +3,7 @@
 #include <random>
 #include "cell.hpp"
 
+
 // Constants
 const float MIN_RADIUS = 5.0f;
 const float MAX_RADIUS = 20.0f;
@@ -49,20 +50,65 @@ int main() {
         simulation.display();
     }
 
-   // Main loop
+
+ bool simulationStarted = false;
+
+
+// Main loop
 while (window.isOpen()) {
     sf::Event event;
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed)
             window.close();
+
+        // Handle button click event
+        if (!simulationStarted && event.type == sf::Event::MouseButtonPressed) {
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+            if (simulation.getStartButton().getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                simulation.setSimulationRunningToTrue();
+                simulationStarted = true;
+            }
+        }
     }
 
-    simulation.update(window.getSize().x, window.getSize().y);
-    simulation.checkCollisionsAndSwallow();  // Check for collisions and handle them
-    window.clear();
-    simulation.display();
+    window.clear(); // Clear the window
+
+    if (simulation.isSimulationRunning()) {
+        simulation.update(window.getSize().x, window.getSize().y);
+        simulation.checkCollisionsAndSwallow();  // Check for collisions and handle them
+        simulation.display();
+    } else {
+        window.draw(simulation.getStartButton());
+
+// Load the font and create the text object
+sf::Font font;
+if (font.loadFromFile("/Users/sam/Desktop/coding projects/Cell division/Cell-Divison/fonts/Arial.ttf")) {
+    sf::Text buttonText("START", font, 24);
+    buttonText.setFillColor(sf::Color::Black);
+
+    // Calculate the center position for the text
+    float textPosX = simulation.getStartButton().getPosition().x +
+                     (simulation.getStartButton().getSize().x - buttonText.getLocalBounds().width) / 2;
+    float textPosY = simulation.getStartButton().getPosition().y +
+                     (simulation.getStartButton().getSize().y - buttonText.getLocalBounds().height) / 2;
+    
+    // Vertically center the text
+    textPosY -= buttonText.getLocalBounds().top;
+    
+    buttonText.setPosition(textPosX, textPosY);
+
+    // Draw the text on the start button
+    window.draw(buttonText);
+}
+
+
+    }
+
     window.display();
 }
+
+
+
 
 
     return 0;
